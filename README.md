@@ -1,1 +1,1 @@
-# mlm
+# Minimal Learning Machine
