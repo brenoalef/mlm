@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mlm import MLM
 import mnist
+from sklearn.metrics import confusion_matrix
 
 def main():
     train_images = mnist.train_images()
@@ -26,11 +27,19 @@ def main():
     mlm.train(X_train, Y_train, int(round(len(X_train)*0.5)))
     Y_hat = mlm.predict(X_test)
 
-    plt.plot(range(len(Y_test)), Y_test, label="Y_test")
-    plt.plot(range(len(Y_hat)), Y_hat, label="Y_hat")
-    plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
-    plt.xlabel('X')
-    plt.ylabel('Y')
+    conf_matrix = confusion_matrix(Y_test, Y_hat)
+    print("Confusion Matrix", conf_matrix)
+
+    labels = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    cax = ax.matshow(conf_matrix)
+    plt.title("Confusion Matrix")
+    fig.colorbar(cax)
+    ax.set_xticklabels([""] + labels)
+    ax.set_yticklabels([""] + labels)
+    plt.xlabel("Predicted")
+    plt.ylabel("Desired")
     plt.show()
 
 
