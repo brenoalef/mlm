@@ -2,15 +2,20 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.metrics import confusion_matrix
+from sklearn.utils import shuffle
 import matplotlib.pyplot as plt
 import mnist
 from mlm import MLM
 
-class SDMLM:
+class MGDMLM:
     def __init__(self, learning_rate=0.01, batch_size=100, training_iters=20):
             self.learning_rate = learning_rate
             self.training_iters = training_iters
             self.batch_size = batch_size
+
+    def next_batch(self, X, Y):
+        for i in np.arange(0, X.shape[0], self.batch_size):
+            yield (X[i:i + self.batch_size], Y[i:i + self.batch_size])
 
     def train(self, X, Y, k=None):
         if k == None:
@@ -21,18 +26,20 @@ class SDMLM:
         Dx = euclidean_distances(X, self.R)
         Dy = euclidean_distances(Y, self.T)
 
-        cost = []
+        loss_history = []
         self.B_hat = np.zeros((Dx.shape[1], Dy.shape[1]))
         for i in range(self.training_iters):
-            offset = (i * self.batch_size) % (Dy.shape[0] - self.batch_size)
-            batch_Dx = Dx[offset:(offset + self.batch_size), :]
-            batch_Dy = Dy[offset:(offset + self.batch_size)]
-            loss = batch_Dx.dot(self.B_hat) - batch_Dy
-            cost.append(np.sum(np.linalg.norm(loss) ** 2) / (2 * len(batch_Dx)))
-            gradient = batch_Dx.T.dot(loss)/len(batch_Dx)
-            gradient *= self.learning_rate
-            self.B_hat -= gradient
-        return cost
+            epoch_loss = []
+            Dx, Dy = shuffle(Dx, Dy)
+            for (batch_Dx, batch_Dy) in self.next_batch(Dx, Dy):
+                error = batch_Dx.dot(self.B_hat) - batch_Dy
+                loss = np.sum(np.square(error)) / (k * batch_Dx.shape[0])
+                epoch_loss.append(loss)
+                gradient = batch_Dx.T.dot(error)/ batch_Dx.shape[0]
+                gradient *= self.learning_rate
+                self.B_hat -= gradient
+            loss_history.append(np.average(epoch_loss))
+        return loss_history
 
     def predict(self, X):
         Dx = euclidean_distances(X, self.R)
@@ -56,10 +63,14 @@ def main():
     Y_test = Y_test.reshape((X_test.shape[0], 1))
 
     learning_rate = 0.00001
-    training_iters = 20
-    sdmlm = SDMLM(learning_rate=learning_rate, training_iters=training_iters)
-    sdmlm.train(X_train, Y_train, int(round(len(X_train)*0.5)))
-    Y_hat = sdmlm.predict(test[:, 0:9])
+    training_iters = 10
+    batch_size = 20
+    mgdmlm = MGDMLM(learning_rate=learning_rate, training_iters=training_iters, batch_size=batch_size)
+    cost = mgdmlm.train(X_train, Y_train, int(round(len(X_train)*0.5)))
+    Y_hat = mgdmlm.predict(test[:, 0:9])
+
+    plt.plot(range(training_iters), cost)
+    plt.show()
 
     conf_matrix = confusion_matrix(Y_test, Y_hat)
     print(conf_matrix)
