@@ -34,9 +34,10 @@ class SGDMLM:
             for j in range(Dx.shape[0]):
                 dx = Dx[j:j + 1]
                 dy = Dy[j:j + 1]
-                loss = dx.dot(self.B_hat) - dy
-                epoch_loss.append(np.sum(np.square(loss)) / k)
-                gradient = dx.T.dot(loss)
+                error = dx.dot(self.B_hat) - dy
+                loss = np.sum(np.square(error)) / k
+                epoch_loss.append(loss)
+                gradient = dx.T.dot(error)
                 gradient *= self.learning_rate
                 self.B_hat -= gradient
             loss_history.append(np.average(epoch_loss))
