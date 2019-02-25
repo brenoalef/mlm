@@ -28,7 +28,7 @@ X_test = scaler.transform(X_test)
 learning_rate = 0.00001
 training_iters = 20
 sgdmlm = SGDMLM(learning_rate=learning_rate, training_iters=training_iters)
-cost = sgdmlm.train(X_train, Y_train, len(X_train))
+cost = sgdmlm.train(X_train, Y_train, int(round(len(X_train)*0.4)))
 Y_hat = sgdmlm.predict(X_test)
 
 
@@ -53,7 +53,7 @@ plt.ylabel("Esperado")
 plt.show()
 
 mlm = MLM()
-mlm.train(X_train, Y_train, len(X_train))
+mlm.train(X_train, Y_train, int(round(len(X_train)*0.4)))
 Y_hat = mlm.predict(X_test)
 
 conf_matrix = confusion_matrix(Y_test, Y_hat)
