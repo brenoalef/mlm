@@ -1,17 +1,20 @@
 import numpy as np
-from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
+
+from sklearn import datasets
 from sklearn.metrics import confusion_matrix
 from sklearn.preprocessing import StandardScaler
-import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+
 from mlm import MLM
 from sgdmlm import SGDMLM
 
-dataset = np.genfromtxt('wine.data', delimiter=',')
-train, test = train_test_split(dataset, train_size=118, test_size=60)
-X_train = train[:, 1:14]
-Y_train = train[:, 0]
-X_test = test[:, 1:14]
-Y_test = test[:, 0]
+wine_dataset = datasets.load_wine()
+X = wine_dataset.data
+Y = wine_dataset.target
+Y = Y.reshape((-1, 1))
+
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, train_size=118, test_size=60)
 Y_train = Y_train.reshape((X_train.shape[0], 1))
 Y_test = Y_test.reshape((X_test.shape[0], 1))
 
@@ -34,16 +37,16 @@ conf_matrix = confusion_matrix(Y_test, Y_hat)
 print(conf_matrix)
 print(np.sum(np.where(Y_hat == Y_test, 1, 0))/len(Y_test))
 
-labels = ['1', '2', '3']
+labels = ["1", "2", "3"]
 fig = plt.figure()
 ax = fig.add_subplot(111)
 cax = ax.matshow(conf_matrix)
-plt.title('Matriz de Confusão do Classificador')
+plt.title("Matriz de Confusão do Classificador")
 fig.colorbar(cax)
-ax.set_xticklabels([''] + labels)
-ax.set_yticklabels([''] + labels)
-plt.xlabel('Predito')
-plt.ylabel('Esperado')
+ax.set_xticklabels([""] + labels)
+ax.set_yticklabels([""] + labels)
+plt.xlabel("Predito")
+plt.ylabel("Esperado")
 plt.show()
 
 mlm = MLM()
@@ -54,14 +57,14 @@ conf_matrix = confusion_matrix(Y_test, Y_hat)
 print(conf_matrix)
 print(np.sum(np.where(Y_hat == Y_test, 1, 0))/len(Y_test))
 
-labels = ['1', '2', '3']
+labels = ["1", "2", "3"]
 fig = plt.figure()
 ax = fig.add_subplot(111)
 cax = ax.matshow(conf_matrix)
-plt.title('Matriz de Confusão do Classificador')
+plt.title("Matriz de Confusão do Classificador")
 fig.colorbar(cax)
-ax.set_xticklabels([''] + labels)
-ax.set_yticklabels([''] + labels)
-plt.xlabel('Predito')
-plt.ylabel('Esperado')
+ax.set_xticklabels([""] + labels)
+ax.set_yticklabels([""] + labels)
+plt.xlabel("Predito")
+plt.ylabel("Esperado")
 plt.show()

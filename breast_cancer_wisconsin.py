@@ -9,12 +9,12 @@ from sklearn.model_selection import train_test_split
 from mlm import MLM
 from sgdmlm import SGDMLM
 
-iris_dataset = datasets.load_iris()
-X = iris_dataset.data
-Y = iris_dataset.target
+breast_cancer_dataset = datasets.load_breast_cancer()
+X = breast_cancer_dataset.data
+Y = breast_cancer_dataset.target
 Y = Y.reshape((-1, 1))
 
-X_train, X_test, Y_train, Y_test = train_test_split(X, Y, train_size=100, test_size=50)
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, train_size=379, test_size=190)
 Y_train = Y_train.reshape((X_train.shape[0], 1))
 Y_test = Y_test.reshape((X_test.shape[0], 1))
 
@@ -22,7 +22,7 @@ scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
-learning_rate = 0.001
+learning_rate = 0.00001
 training_iters = 20
 sgdmlm = SGDMLM(learning_rate=learning_rate, training_iters=training_iters)
 cost = sgdmlm.train(X_train, Y_train, len(X_train))
@@ -37,7 +37,7 @@ conf_matrix = confusion_matrix(Y_test, Y_hat)
 print(conf_matrix)
 print(np.sum(np.where(Y_hat == Y_test, 1, 0))/len(Y_test))
 
-labels = ["Setosa", "Versicolor", "Virginica"]
+labels = ["Benigno", "Maligno"]
 fig = plt.figure()
 ax = fig.add_subplot(111)
 cax = ax.matshow(conf_matrix)
@@ -57,7 +57,7 @@ conf_matrix = confusion_matrix(Y_test, Y_hat)
 print(conf_matrix)
 print(np.sum(np.where(Y_hat == Y_test, 1, 0))/len(Y_test))
 
-labels = ["Setosa", "Versicolor", "Virginica"]
+labels = ["Benigno", "Maligno"]
 fig = plt.figure()
 ax = fig.add_subplot(111)
 cax = ax.matshow(conf_matrix)
