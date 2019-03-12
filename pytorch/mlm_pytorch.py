@@ -26,15 +26,7 @@ class MLM:
                 Du[i, j] = torch.dist(U[i], V[j])
         return Du
         '''
-        '''
-        print(U.numpy().shape)
-        print(V.numpy().shape)
         return torch.Tensor(euclidean_distances(U.numpy(), V.numpy()))
-        '''
-        U_norm = (U**2).sum(1).view(-1, 1)
-        V_norm = (V**2).sum(1).view(-1, 1)
-        return U_norm + V_norm - 2.0*torch.mm(U, torch.transpose(V, 0, 1))
-
 
     def train(self, X, Y, k=0.5):
         self.select_reference_points(X, Y, k)
