@@ -1,15 +1,33 @@
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.metrics.pairwise import euclidean_distances
+from sklearn.metrics import pairwise_distances
+from sklearn.cluster import MiniBatchKMeans
 import matplotlib.pyplot as plt
 
 class MLM:
-    def train(self, X, Y, k=None):
-        if k == None:
-            k = int(round(len(X)*0.4))
+    def srpKNearestCenter(self, X, Y, k):
+        if k < 1.0:
+            k = int(round(len(X)*k))
+        kmeans = MiniBatchKMeans(n_clusters=k, init='k-means++')
+        kmeans.fit(X)
+        d = pairwise_distances(kmeans.cluster_centers_, X)
+        idx = np.argmin(d, axis=1)
+        self.R = X[idx]
+        self.T = Y[idx]
+
+    def srpRand(self, X, Y, k):
+        if k < 1.0:
+            k = int(round(len(X)*k))
         idx = np.random.choice(np.arange(X.shape[0]), k, replace=False)
         self.R = X[idx]
         self.T = Y[idx]
+
+    def train(self, X, Y, k=0.5, srp='rand'):
+        if srp == 'kmedoids':
+            self.srpKNearestCenter(X, Y, k)
+        else:
+            self.srpRand(X, Y, k)
         Dx = euclidean_distances(X, self.R)
         Dy = euclidean_distances(Y, self.T)
         self.B_hat = np.linalg.pinv(Dx).dot(Dy)
