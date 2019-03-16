@@ -1,9 +1,15 @@
 import numpy as np
+import matplotlib.pyplot as plt
+
+from numpy.matlib import repmat
+
+from sklearn.cluster import MiniBatchKMeans
+from sklearn.metrics import pairwise_distances
 from sklearn.model_selection import train_test_split
 from sklearn.metrics.pairwise import euclidean_distances
-from sklearn.metrics import pairwise_distances
-from sklearn.cluster import MiniBatchKMeans
-import matplotlib.pyplot as plt
+
+from scipy.optimize import root
+
 
 class MLM:
     def srpKNearestCenter(self, X, Y, k):
@@ -24,22 +30,30 @@ class MLM:
         self.T = Y[idx]
 
     def train(self, X, Y, k=0.5, srp='rand'):
+        if Y.ndim == 1:
+            Y = Y.reshape(-1, 1)
         if srp == 'kmedoids':
             self.srpKNearestCenter(X, Y, k)
         else:
             self.srpRand(X, Y, k)
-        Dx = euclidean_distances(X, self.R)
-        Dy = euclidean_distances(Y, self.T)
-        self.B_hat = np.linalg.pinv(Dx).dot(Dy)
+        #Dx = euclidean_distances(X, self.R)
+        #Dy = euclidean_distances(Y, self.T)
+        #self.B_hat = np.linalg.pinv(Dx).dot(Dy)
+        self.B_hat = np.linalg.pinv(euclidean_distances(X, self.R)).dot(euclidean_distances(Y, self.T))
 
-    def predict(self, X):
-        Dx = euclidean_distances(X, self.R)
-        Dy = Dx.dot(self.B_hat)
-        pred_hat = []
-        for i in range(len(X)):
-            # TODO: Use Levenberg–Marquardt
-            pred_hat.append(self.T[np.argmin(Dy[i])])
-        return np.array(pred_hat)
+    def predict(self, X, method="nn"):
+        #Dx = euclidean_distances(X, self.R)
+        #Dy = Dx.dot(self.B_hat)
+        Dy = euclidean_distances(X, self.R).dot(self.B_hat)
+        if method == "nn":
+            return self.T[np.argmin(Dy, axis=1)]
+        elif method == "lm":
+            yh0 = np.mean(self.T, axis=0)
+            y_hat = np.zeros((Dy.shape[0], self.T.shape[1]))
+            for i in range(Dy.shape[0]):
+                J = lambda x: np.sum(np.square(self.T - repmat(x, self.T.shape[0], 1)), 1) - np.square(Dy[i, :].T)
+                y_hat[i] = root(fun=J, x0=yh0, method="lm").x
+            return y_hat       
 
 
 def main():
@@ -53,7 +67,7 @@ def main():
 
     mlm = MLM()
     mlm.train(X_train, Y_train)
-    Y_hat = mlm.predict(X_test)
+    Y_hat = mlm.predict(X_test, method="lm")
 
     plt.plot(range(len(Y_test)), Y_test, label="Y_test")
     plt.plot(range(len(Y_hat)), Y_hat, label="Y_hat")
