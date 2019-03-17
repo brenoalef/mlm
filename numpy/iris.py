@@ -68,3 +68,12 @@ ax.set_yticklabels([""] + labels)
 plt.xlabel("Predito")
 plt.ylabel("Esperado")
 plt.show()
+
+from mlm import model_selection, get_accuracy
+k_values = np.arange(0.1,1.0,0.1)
+k = model_selection(X_train, Y_train, k_values, 10)
+model = MLM()
+model.train(X_train, Y_train, k=k)
+pred = model.predict(X_test)
+print("Koptim:", k)
+print("Accuracy:", get_accuracy(Y_test, pred))
